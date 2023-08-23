@@ -1,0 +1,75 @@
+// Proctorio
+(function(){var a=document.createElement("script"),b=document.head||document.getElementsByTagName("head")[0];a.onload=function(){b.removeChild(a)};a.src="//az545770.vo.msecnd.net/snippets/5/gbl/canvas-global-embed.js";b.appendChild(a)})();
+// WalkMe
+(function() {var walkme = document.createElement('script'); walkme.type = 'text/javascript'; walkme.async = true; walkme.src = 'https://cdn.walkme.com/users/3c7ac4f0402a4694af555413a9b5f50b/walkme_3c7ac4f0402a4694af555413a9b5f50b_https.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(walkme, s); window._walkmeConfig = {smartLoad:true}; })();
+// ---
+// BEGIN Zendesk Chat Widget
+// https://developer.zendesk.com/embeddables/docs/widget/settings
+// ---
+window.zE||function(t, e, a) {
+    var s = [],
+        c = function () {
+            s.push(arguments)
+        },
+        n = t.createElement(e);
+    n.type = "text/javascript";
+    n.src = "https://static.zdassets.com/ekr/asset_composer.js?key=" + a;
+    n.setAttribute("charset", "utf-8");
+    n.async = true;
+    c._ = s;
+    c.t = Date.now();
+    c.s = n;
+    window.zE = window.zEmbed = c;
+    t.getElementsByTagName("head")[0].appendChild(n);
+    window.zESettings = {
+        webWidget: {
+            launcher: {
+                chatLabel: {
+                    '*': 'CUSPS Helpdesk'
+                },
+                chatLabelOffline: {
+                    '*': 'CUSPS Helpdesk'
+                }
+            },
+            position: {
+                horizontal: 'right',
+                vertical: 'top'
+            },
+            color: {
+                theme: '#012169',
+                launcher: '#d4285b',
+                button: '#D4285B'
+            },
+            zIndex: 100
+        }
+    }
+    if (t.getElementById('gradebook_header') !== null || document.body.classList.contains('is-inside-submission-frame', 'quizzes-speedgrader') || document.body.classList.contains('quizzes-speedgrader')){
+        zE('webWidget', 'hide');
+    } else{
+        var checkExist = setInterval(function() {
+            if (document.getElementById('launcher') === null){
+            }
+            else{var widgetIframe = document.getElementById('launcher').contentWindow.document.body;
+                var btnToggleZdWidget = document.createElement('button');
+                var toggleBtnLabel = document.createElement('span');
+                var toggleBtnText = document.createTextNode('×');
+                btnToggleZdWidget.setAttribute("style", "height: 21px; width: 21px; display: block; padding: 0; overflow: hidden; color: #ffffff; background-color: #012169; border: 2px solid #ffffff; border-radius: 50%; position: absolute; top: 0px; right: 0px; z-index: 101;");
+                btnToggleZdWidget.setAttribute("class", "zd-hide");
+                toggleBtnLabel.setAttribute("style", "width: 100%; height: 100%; display: block; margin: 0 auto; line-height: 13px; font-size: large;");
+                btnToggleZdWidget.appendChild(toggleBtnLabel);
+                toggleBtnLabel.appendChild(toggleBtnText);
+                btnToggleZdWidget.id = "zdwidget-toggle";
+                btnToggleZdWidget.title = "Dismiss helpdesk widget";
+                btnToggleZdWidget.onclick = function(){
+                    zE.hide();
+                };
+                widgetIframe.appendChild(btnToggleZdWidget);
+                clearInterval(checkExist);
+            }
+        }, 1000);
+    }
+}
+(document,"script","7b7d3dcb-99e8-4d5b-87ab-70ba0488bcc2");
+// ---
+// END Zendesk Chat Widget
+// ---

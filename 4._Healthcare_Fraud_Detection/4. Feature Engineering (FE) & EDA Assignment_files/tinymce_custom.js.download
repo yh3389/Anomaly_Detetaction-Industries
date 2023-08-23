@@ -1,0 +1,219 @@
+// ---
+// BEGIN Change the Canvas ENV vars as early as possible
+// ---
+//   Update the CSS to load in the tinymce to use all of the CSS currently loaded for the page
+// ---
+var loadedCSS = document.styleSheets;
+$.each(loadedCSS, function (value) {
+    if (loadedCSS[value].href !== null) {
+        window.ENV.url_to_what_gets_loaded_inside_the_tinymce_editor_css.push(loadedCSS[value].href);
+        // window.ENV.url_to_what_gets_loaded_inside_the_tinymce_editor_css.push('https://www1.columbia.edu/sec/cu/spsinnov/sps-canvas-stylesheet.css');
+    }
+});
+// ---
+// END Canvas ENV
+// ---
+
+// ---
+// BEGIN Code and functions to load when the page is fully loaded
+// ---
+$( window ).load(function() {
+    // ---
+    // Ensure printable Syllabus for legacy courses
+    // ---
+    var cuContent = $('.cu-content');
+    if (cuContent.length >= 1){
+        var sylBody = $(document.body);
+        var autoHead = $('.ic-Action-header');
+        var autoSched = $('#syllabusContainer');
+        var autoSchedHead = autoSched.siblings('h2');
+        //sps-canvas-stylesheet.css uses classes "print-visible", "print-hidden", and "print-remove" to define elements to displayed with print media query. Add to the following as needed, defining classes and elements.
+        var printClasses = {
+            visible: [cuContent],
+            hidden: [sylBody],
+            remove: [autoHead, autoSched, autoSchedHead]
+        };
+        var classesArray = Object.entries(printClasses);
+        for(i = 0; i < classesArray.length; i++){
+            var classKey = classesArray[i][0];
+            for(n = 0; n < classesArray[i][1].length; n++){
+                var elem = classesArray[i][1][n];
+                $(elem).addClass("print-"+classKey);
+            }
+        }
+    }
+    //---
+
+    // ---
+    // Auto-rotate overview images when present
+    // ---
+    var imgContainerCnt = $(".div-img-container").length;
+    if (imgContainerCnt >= 2) {
+        var imgCnt = $("#desktop-img").children().length;
+    } else {var imgCnt = $(".div-img-container").children().length;}
+    var cnt = $(".overview-image-1").length;
+    var almaCnt = $(".overview-image-alma").length;
+    if (cnt>=1) {
+        var rnd = Math.floor((Math.random() * 14) + 1);
+        var newStyle = "overview-image-"+rnd;
+        $(".overview-image-1").removeClass('overview-image-1').addClass(newStyle);
+        imgCnt = $(".div-img-container").children().length;
+    }
+    if (almaCnt>=1 && imgCnt>=2) {
+        $(".overview-image-alma").addClass('overview-image-out');
+    }
+    //---
+
+    // ---
+    // Ensure that all BBB conferences have recording enabled
+    // ---
+    $("button.new-conference-btn").live("click",
+        function() {
+            rec = $("#web_conference_user_settings_record")[0];
+            if (rec) { rec.checked = true; rec.disabled = true; }
+        }
+    );
+    //---
+
+    // ---
+    // Check for editor to start observer for placeholder image replacement
+    // ---
+    document.onmousedown = function(){
+        if ($(".ic-RichContentEditor").length > 0)
+            observersStart()
+    };
+    //---
+    // ---
+    // BEGIN Pre-flight Technology Check Select
+    // ---
+    if ($(".ic-RichContentEditor").length > 0){
+        setTimeout(function(){
+            var wikiFrame = $('#wiki_page_body_ifr').contents();
+            var techCheckIframe = wikiFrame.find('span.mce-preview-object.mce-object-iframe');
+            if ($(techCheckIframe).attr('data-mce-p-id') === 'tech-check'){
+                techList = [];
+                var techButtons = wikiFrame.find('.btn-add-techcheck');
+                $(techButtons).each(function(){
+                    if($(this).hasClass('btn-success')){
+                        var techName = this.dataset.techcheck;
+                        techList.push(techName);
+                    }
+                });
+                techList.sort();
+                var techCheckNameAttr = techList.join('|');
+                if (techCheckNameAttr.length > 0){
+                    techCheckNameAttr = "canvas|" + techCheckNameAttr;
+                } else techCheckNameAttr = "canvas";
+                $(techCheckIframe).attr('data-mce-p-name', techCheckNameAttr);
+                techButtons.click(function(){
+                    if ($(this).hasClass('btn-secondary')){
+                        $(this).addClass('btn-success').removeClass('btn-secondary');
+                        var techname = this.dataset.techcheck;
+                        techList.push(techname);
+                    } else if ($(this).hasClass('btn-success')){
+                        var techname = this.dataset.techcheck;
+                        $(techList).each(function(i){
+                            if(techList[i] === techname){
+                                techList.splice(i, 1);
+                            }
+                        });
+                        $(this).addClass('btn-secondary').removeClass('btn-success');
+                    }
+                    techList.sort();
+                    var techCheckNameAttr = techList.join('|');
+                    if (techCheckNameAttr.length > 0){
+                        techCheckNameAttr = "canvas|" + techCheckNameAttr;
+                    } else techCheckNameAttr = "canvas";
+                    $(techCheckIframe).attr('data-mce-p-name', techCheckNameAttr);
+                });
+            }
+        },1500)
+    }
+    // ---
+    // END Pre-flight Technology Check Select
+    // ---
+    // 08/23/2019
+    // ---
+});
+// ---
+// END Code and functions to load when the page is fully loaded
+// ---
+// 05/01/2018
+// ---
+
+// ---
+// BEGIN Allow easy placeholder image replacement
+// ---
+function imgDrop(){
+    var editorCheck = $('.ic-RichContentEditor').length;
+    if (editorCheck === 1) {
+        var placeholders = findPlaceholders();
+        if (placeholders !== undefined){
+            if (placeholders.length >= 1) {
+                placeholderObserver();
+            }
+        }
+    }
+    function findPlaceholders(){
+        var x = $('.ic-RichContentEditor iframe');
+        if (x.length === 1){
+            var templateCheck = x[0].contentDocument.querySelectorAll('#cu-body');
+            if (templateCheck.length >= 1){
+                var y = x[0].contentDocument.querySelectorAll('i.placeholder-img');
+                if (y.length >= 1){
+                    return y;
+                }
+            }
+        }
+    }
+    function placeholderObserver() {
+        var config = { childList: true };
+        var placeholders = findPlaceholders();
+        $(placeholders).each(function() {
+            var target = this;
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function() {
+                    var x = document.querySelectorAll('.ic-RichContentEditor iframe');
+                    if (x[0].contentDocument.querySelector('i.placeholder-img > img')){
+                        var y = x[0].contentDocument.querySelector('i.placeholder-img > img');
+                    } else var y = x[0].contentDocument.querySelector('i.placeholder-img > a');
+                    $(y).unwrap('i.placeholder-img');
+                });
+            });
+            observer.observe(target, config);
+            document.onmouseup = function(){
+                setTimeout(observer.disconnect(), 500);
+            }
+        });
+    }
+}
+function observersStart(){
+    imgDrop();
+}
+// ---
+// END Allow easy placeholder image replacement
+// ---
+
+// ---
+// BEGIN Place Zendesk Chat Widget
+// ---
+// window.zE||function(t, e, a) {
+//     var s = [],
+//         c = function () {
+//             s.push(arguments)
+//         },
+//         n = t.createElement(e);
+//     n.type = "text/javascript";
+//     n.src = "https://static.zdassets.com/ekr/snippet.js?key=" + a;
+//     n.setAttribute("charset", "utf-8");
+//     n.async = true;
+//     c._ = s;
+//     c.t = Date.now();
+//     c.s = n;
+//     window.zE = window.zEmbed = c;
+//     t.getElementsByTagName("head")[0].appendChild(n)
+// }
+// (document,"script","7b7d3dcb-99e8-4d5b-87ab-70ba0488bcc2");
+// ---
+// END Place Zendesk Chat Widget
+// ---
